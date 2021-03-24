@@ -2224,7 +2224,7 @@ if ~isequal(file,0)
     else
         senselvar = handles.senselvar;
         time_order = handles.time_order;
-        force = handles.force;
+        force = handles.force{selected_condition};
         time = handles.tekvar{selected_condition}.data_a.time;
     end
 
@@ -2287,7 +2287,7 @@ if ~isequal(file,0)
             
             map_stats(index+1, :) = temp_map_stats;
         else
-            [max_loc_y, max_loc_x] = find(mag_roi == max(max(mag_roi(~isnan(mag_roi)))), 1);
+            [max_loc_y, max_loc_x] = find(mag_roi == max(max(mag_roi)), 1);
             if ~isempty(mag_roi(~isnan(mag_roi) & mag_roi ~= 0))
                 [min_loc_y, min_loc_x] = find(mag_roi == min(min(mag_roi(~isnan(mag_roi) & mag_roi ~= 0))), 1);
             else
@@ -2374,7 +2374,7 @@ else
 end
 
 if nargin == 1 % use all frames if none is input by user
-    frames = 1:length(force);
+    frames = 1:length(force{selected_condition});
 else % use user defined frame range
     frames = frame_range;
 end
@@ -2426,7 +2426,7 @@ if ~get(handles.risk_map_checkbox, 'Value') % if getting WCoCS for stress map
         
         % store data to put into matrix
         temp_loc = [Left_J*col_space, Left_dx, Left_I*row_space, Left_dy, (Right_J+cols/2)*col_space, Right_dx, Right_I*row_space, Right_dy];
-
+        
         if get(handles.both_plateaus, 'Value') % calculate rotation angle and velocity if both sides are used
             raw = polyfit([Left_J Right_J], [Left_I Right_I], 1);
             m(index) = raw(1);
@@ -2434,7 +2434,7 @@ if ~get(handles.risk_map_checkbox, 'Value') % if getting WCoCS for stress map
             atheta(index) = 0;
             temp_loc = [temp_loc m(index) b(index) atheta(index)];
         end
-
+        
         if strcmp(get(handles.pattern_register, 'Checked'), 'on') % output gait cycle and flexion angle if pattern registration is used
             temp_loc = [handles.gait_time(index)/handles.Tl*100 handles.flexion_rep(index) temp_loc];
         end
@@ -4217,7 +4217,7 @@ if strcmp(get(handles.avg_data, 'Checked'), 'on')
 else
     senselvar = handles.senselvar;
     time_order = handles.time_order;
-    force = handles.force;
+    force = handles.force{selected_condition};
     time = handles.tekvar{selected_condition}.data_a.time;
     if  handles.mag_calced
         magnitude_risk = handles.magnitude_risk;
@@ -5930,7 +5930,7 @@ if strcmp(get(handles.avg_data, 'Checked'), 'on')
 else
     senselvar = handles.senselvar;
     time_order = handles.time_order;
-    force = handles.force;
+    force = handles.force{selected_condition};
     time = handles.tekvar{selected_condition}.data_a.time;
     if  handles.mag_calced
         magnitude_risk = handles.magnitude_risk;
