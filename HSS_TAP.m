@@ -2210,12 +2210,13 @@ if ~isequal(file,0)
             sensel_area = handles.tekvar{selected_condition}.header.row_spacing*handles.tekvar{selected_condition}.header.col_spacing*1000^2;
     end
     
-    map_stats(1,:) = {'Time [s]' 'Mean [N]' 'Max [N]' 'Loc X Max Force [mm]' 'Loc Y Max Force [mm]' 'Min [N]' 'Loc X Min Stress [mm]' 'Loc Y Min Stress [mm]' 'Sum [N]'};
+    map_stats(1,:) = {'Time [s]' 'Mean [N]' 'Max [N]' 'Loc X Max Force [mm]' 'Loc Y Max Force [mm]' 'Min [N]' 'Loc X Min Stress [mm]' 'Loc Y Min Stress [mm]' 'Sum [N]'}; % column headers
     
-    if strcmp(get(handles.pattern_register, 'Checked'), 'on')
+    if strcmp(get(handles.pattern_register, 'Checked'), 'on') % if registered to a pattern add headers for % gait and flexion angle
         map_stats(1,end+1:end+2) = {'Percent Gait' 'Flexion Angle [deg]'};
     end 
     
+    % check if using averaged data
     if strcmp(get(handles.avg_data, 'checked'), 'on')
         senselvar = handles.avg_senselvar;
         time_order = handles.avg_time_order;
@@ -3059,7 +3060,7 @@ else
     if nargin == 3
         time_span =  (inputdlg({['Start Cycle [From End (Max value = ' num2str(max_cycles) ' (first cycle))]:'], 'End Cycle (min value = 1 (last cycle)):'}, 'Movie Frame Span',1, {num2str(round(handles.length_time/handles.Tl*handles.T)), '1'}));
     else
-        time_span = {num2str(end_cycle_input) num2str(start_cycle_input)};
+        time_span = {num2str(start_cycle_input) num2str(end_cycle_input)};
     end
       
     if ~isempty(time_span)
