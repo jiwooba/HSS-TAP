@@ -333,7 +333,7 @@ if ~isequal(file,0)
                 
                 cond1 = subplot(1,2,1); % create a 2 column x 1 row figure
                 % for tekscan 1
-                pcond1 = pcolor(handles.senselvar{1}(:,:,handles.time_order{1}(frame_write)));
+                pcond1 = pcolor(cond1,handles.senselvar{1}(:,:,handles.time_order{1}(frame_write)));
                 caxis([0 handles.max_crange])
                 title(handles.tekvar_name{1})
                 set(cond1, 'XTick', 0:1:handles.tekvar{selected_condition}.header.cols)
@@ -351,7 +351,7 @@ if ~isequal(file,0)
                 
                 cond2 = subplot(1,2,2);
                 % for tekscan 2
-                pcond2 = pcolor(handles.senselvar{2}(:,:,handles.time_order{2}(frame_write)));
+                pcond2 = pcolor(cond2,handles.senselvar{2}(:,:,handles.time_order{2}(frame_write)));
                 caxis([0 handles.max_crange])
                 title(handles.tekvar_name{2})
                 set(cond2, 'XTick', 0:1:handles.tekvar{selected_condition}.header.cols)
@@ -366,13 +366,62 @@ if ~isequal(file,0)
                 cmap = [0 0 0; cmap];
                 colormap(cmap);
                 colorbar
-                
+
+                %% display WCOCS locations
+                if strcmp(get(handles.centroid, 'Checked'), 'on')
+                    rows = handles.tekvar{selected_condition}.header.rows;
+                    cols = handles.tekvar{selected_condition}.header.cols;
+
+                    % Show left WCOCS
+                    if get(handles.left_plateau, 'Value') || get(handles.both_plateaus, 'Value')
+                        % Condition 1
+                        [I, J] = centroid_location(abs(handles.senselvar{selected_condition}(1:rows,1:round(cols/2),handles.time_order{selected_condition}(frame_write))), str2num(get(handles.noise_floor_edit, 'String')), true);
+                        hold(cond1, 'on')
+                        plot(cond1, J, I, 'MarkerFaceColor',[1 1 1],'MarkerEdgeColor',[0 0 0],...
+                            'MarkerSize',15,...
+                            'Marker','pentagram',...
+                            'LineStyle','none', 'HitTest', 'off');
+                        hold(cond1, 'off')
+                        
+                        % Condition 2
+                        [I, J] = centroid_location(abs(handles.senselvar{2}(1:rows,1:round(cols/2),handles.time_order{selected_condition}(frame_write))), str2num(get(handles.noise_floor_edit, 'String')), true);
+                        hold(cond2, 'on')
+                        plot(cond2, J, I, 'MarkerFaceColor',[1 1 1],'MarkerEdgeColor',[0 0 0],...
+                            'MarkerSize',15,...
+                            'Marker','pentagram',...
+                            'LineStyle','none', 'HitTest', 'off');
+                        hold(cond2, 'off')
+                    end
+
+                    % Show right WCOCS
+                    if get(handles.right_plateau, 'Value') || get(handles.both_plateaus, 'Value')
+                        % Condition 1
+                        [I, J] = centroid_location(abs(handles.senselvar{selected_condition}(1:rows,(cols-round(cols/2)):cols,handles.time_order{selected_condition}(frame_write))), str2num(get(handles.noise_floor_edit, 'String')), true);
+                        hold(cond1, 'on')
+                        plot(cond1, J+cols/2, I, 'MarkerFaceColor',[1 1 1],'MarkerEdgeColor',[0 0 0],...
+                            'MarkerSize',15,...
+                            'Marker','pentagram',...
+                            'LineStyle','none', 'HitTest', 'off');
+                        hold(cond1, 'off')
+
+                        % Condition 2
+                        [I, J] = centroid_location(abs(handles.senselvar{2}(1:rows,(cols-round(cols/2)):cols,handles.time_order{selected_condition}(frame_write))), str2num(get(handles.noise_floor_edit, 'String')), true);
+                        hold(cond2, 'on')
+                        plot(cond2, J+cols/2, I, 'MarkerFaceColor',[1 1 1],'MarkerEdgeColor',[0 0 0],...
+                            'MarkerSize',15,...
+                            'Marker','pentagram',...
+                            'LineStyle','none', 'HitTest', 'off');
+                        hold(cond2, 'off')
+                    end
+                end
+
                 % make movie frame
                 F = getframe(fig);
                 writeVideo(aviobj,F)
             end
         case 'No' % if only a single tekscan file will be saved in the movie
             fig = figure('Color', 'White');
+            ax = axes;
             fps =  (inputdlg({'FPS:'}, 'Frames Per Second',1,{num2str(handles.Fs)})); % frames/sec to run movie at
             aviobj = VideoWriter([pathfile file]);
             aviobj.FrameRate = str2num(fps{1});
@@ -381,7 +430,37 @@ if ~isequal(file,0)
             
             % start capturing frames of movie file
             for frame_write = start_frame:end_frame
-                pcolor(handles.senselvar{selected_condition}(:,:,handles.time_order{selected_condition}(frame_write)));
+                pcolor(ax,handles.senselvar{selected_condition}(:,:,handles.time_order{selected_condition}(frame_write)));
+                %% display WCOCS locations
+                if strcmp(get(handles.centroid, 'Checked'), 'on')
+                    rows = handles.tekvar{selected_condition}.header.rows;
+                    cols = handles.tekvar{selected_condition}.header.cols;
+
+                    % Show left WCOCS
+                    if get(handles.left_plateau, 'Value') || get(handles.both_plateaus, 'Value')
+                        [I, J] = centroid_location(abs(handles.senselvar{selected_condition}(1:rows,1:round(cols/2),handles.time_order{selected_condition}(frame_write))), str2num(get(handles.noise_floor_edit, 'String')), true);
+                        hold(ax, 'on')
+                        plot(ax, J, I, 'MarkerFaceColor',[1 1 1],'MarkerEdgeColor',[0 0 0],...
+                            'MarkerSize',15,...
+                            'Marker','pentagram',...
+                            'LineStyle','none', 'HitTest', 'off');
+                        hold(ax, 'off')
+                        %         handles.var_collector(selected_condition,[1,2]) = [J*col_space, I*row_space]; %whs added, collect the key values.
+                    end
+
+                    % Show right WCOCS
+                    if get(handles.right_plateau, 'Value') || get(handles.both_plateaus, 'Value')
+                        [I, J] = centroid_location(abs(handles.senselvar{selected_condition}(1:rows,(cols-round(cols/2)):cols,handles.time_order{selected_condition}(frame_write))), str2num(get(handles.noise_floor_edit, 'String')), true);
+                        hold(ax, 'on')
+                        plot(ax, J+cols/2, I, 'MarkerFaceColor',[1 1 1],'MarkerEdgeColor',[0 0 0],...
+                            'MarkerSize',15,...
+                            'Marker','pentagram',...
+                            'LineStyle','none', 'HitTest', 'off');
+                        hold(ax, 'off')
+                        %         handles.var_collector(selected_condition,3:4) = [(J+cols/2)*col_space, I*row_space]; %whs added, collect the key values.
+                    end
+                end
+
                 caxis([0 handles.max_crange])
                 set(gca, 'XTick', 0:1:handles.tekvar{selected_condition}.header.cols)
                 set(gca, 'YTick', 0:1:handles.tekvar{selected_condition}.header.rows)
@@ -395,6 +474,8 @@ if ~isequal(file,0)
                 cmap = [0 0 0; cmap];
                 colormap(cmap);
                 colorbar
+
+                % make movie frame
                 F = getframe(fig);
                 writeVideo(aviobj,F)
             end
@@ -2210,13 +2291,12 @@ if ~isequal(file,0)
             sensel_area = handles.tekvar{selected_condition}.header.row_spacing*handles.tekvar{selected_condition}.header.col_spacing*1000^2;
     end
     
-    map_stats(1,:) = {'Time [s]' 'Mean [N]' 'Max [N]' 'Loc X Max Force [mm]' 'Loc Y Max Force [mm]' 'Min [N]' 'Loc X Min Stress [mm]' 'Loc Y Min Stress [mm]' 'Sum [N]'}; % column headers
+    map_stats(1,:) = {'Time [s]' 'Mean [N]' 'Max [N]' 'Loc X Max Force [mm]' 'Loc Y Max Force [mm]' 'Min [N]' 'Loc X Min Stress [mm]' 'Loc Y Min Stress [mm]' 'Sum [N]'};
     
-    if strcmp(get(handles.pattern_register, 'Checked'), 'on') % if registered to a pattern add headers for % gait and flexion angle
+    if strcmp(get(handles.pattern_register, 'Checked'), 'on')
         map_stats(1,end+1:end+2) = {'Percent Gait' 'Flexion Angle [deg]'};
     end 
     
-    % check if using averaged data
     if strcmp(get(handles.avg_data, 'checked'), 'on')
         senselvar = handles.avg_senselvar;
         time_order = handles.avg_time_order;
@@ -2714,21 +2794,21 @@ end
 
 switch quad_loc
     case 'LP_PP'
-        quadvalues = sensel((rows/2+1):end,1:LP_end/2);
+        quadvalues = sensel(ceil(rows/2+1):end,1:floor(LP_end/2));
     case 'LP_AP'
-        quadvalues = sensel(5:13,1:LP_end/2);
+        quadvalues = sensel(1:floor(rows/2+1),floor(1:LP_end/2));
     case 'LP_PC'
-        quadvalues = sensel((rows/2+1):end,(LP_end/2+1):LP_end);
+        quadvalues = sensel(ceil(rows/2+1):end,ceil(LP_end/2):LP_end);
     case 'LP_AC'
-        quadvalues = sensel(5:13,(LP_end/2+1):LP_end);
+        quadvalues = sensel(1:floor(rows/2+1),ceil(LP_end/2):LP_end);
     case 'RP_PP'
-        quadvalues = sensel((rows/2+1):end,(floor(11/2)+RP_start+1):end);
+        quadvalues = sensel(ceil(rows/2+1):end,(floor(LP_end/2)+RP_start):end);
     case 'RP_AP'
-        quadvalues = sensel(5:13,(floor(11/2)+RP_start+1):end);
+        quadvalues = sensel(1:floor(rows/2+1),(floor(LP_end/2)+RP_start):end);
     case 'RP_PC'
-        quadvalues = sensel((rows/2+1):end,RP_start:(floor(11/2)+RP_start));
+        quadvalues = sensel(ceil(rows/2+1):end,RP_start:(floor(LP_end/2)+RP_start-1));
     case 'RP_AC'
-        quadvalues = sensel(5:13,RP_start:(floor(11/2)+RP_start));
+        quadvalues = sensel(1:floor(rows/2+1),RP_start:(floor(LP_end/2)+RP_start-1));
 end
 
 function sectorvalues = get_sector(sector_loc, sensel)
@@ -3060,7 +3140,7 @@ else
     if nargin == 3
         time_span =  (inputdlg({['Start Cycle [From End (Max value = ' num2str(max_cycles) ' (first cycle))]:'], 'End Cycle (min value = 1 (last cycle)):'}, 'Movie Frame Span',1, {num2str(round(handles.length_time/handles.Tl*handles.T)), '1'}));
     else
-        time_span = {num2str(start_cycle_input) num2str(end_cycle_input)};
+        time_span = {num2str(end_cycle_input) num2str(start_cycle_input)};
     end
       
     if ~isempty(time_span)
@@ -3253,14 +3333,14 @@ if ~isequal(file,0)
     handles.path = pathfile;
     guidata(hObject, handles);
 
-    map_quad_LP_stats(1,:) = {'Time [s]' 'LP_AC Mean [Pa]' 'LP_AC Max [Pa]' 'LP_AC Loc X Max Stress [mm]' 'LP_AC Loc Y Max Stress [mm]' 'LP_AC Min [Pa]' 'LP_AC Loc X Min Stress [mm]' 'LP_AC Loc Y Min Stress [mm]' 'LP_AC Sum [Pa]'...
-        'LP_PC Mean [Pa]' 'LP_PC Max [Pa]' 'LP_PC Loc X Max Stress [mm]' 'LP_PC Loc Y Max Stress [mm]' 'LP_PC Min [Pa]' 'LP_PC Loc X Min Stress [mm]' 'LP_PC Loc Y Min Stress [mm]' 'LP_PC Sum [Pa]'...
-        'LP_PP Mean [Pa]' 'LP_PP Max [Pa]' 'LP_PP Loc X Max Stress [mm]' 'LP_PP Loc Y Max Stress [mm]' 'LP_PP Min [Pa]' 'LP_PP Loc X Min Stress [mm]' 'LP_PP Loc Y Min Stress [mm]' 'LP_PP Sum [Pa]'...
-        'LP_AP Mean [Pa]' 'LP_AP Max [Pa]' 'LP_AP Loc X Max Stress [mm]' 'LP_AP Loc Y Max Stress [mm]' 'LP_AP Min [Pa]' 'LP_AP Loc X Min Stress [mm]' 'LP_AP Loc Y Min Stress [mm]' 'LP_AP Sum [Pa]'};
-    map_quad_RP_stats(1,:) = {'Time [s]' 'RP_AC Mean [Pa]' 'RP_AC Max [Pa]' 'RP_AC Loc X Max Stress [mm]' 'RP_AC Loc Y Max Stress [mm]' 'RP_AC Min [Pa]' 'RP_AC Loc X Min Stress [mm]' 'RP_AC Loc Y Min Stress [mm]' 'RP_AC Sum [Pa]'...
-        'RP_PC Mean [Pa]' 'RP_PC Max [Pa]' 'RP_PC Loc X Max Stress [mm]' 'RP_PC Loc Y Max Stress [mm]' 'RP_PC Min [Pa]' 'RP_PC Loc X Min Stress [mm]' 'RP_PC Loc Y Min Stress [mm]' 'RP_PC Sum [Pa]'...
-        'RP_PP Mean [Pa]' 'RP_PP Max [Pa]' 'RP_PP Loc X Max Stress [mm]' 'RP_PP Loc Y Max Stress [mm]' 'RP_PP Min [Pa]' 'RP_PP Loc X Min Stress [mm]' 'RP_PP Loc Y Min Stress [mm]' 'RP_PP Sum [Pa]'...
-        'RP_AP Mean [Pa]' 'RP_AP Max [Pa]' 'RP_AP Loc X Max Stress [mm]' 'RP_AP Loc Y Max Stress [mm]' 'RP_AP Min [Pa]' 'RP_AP Loc X Min Stress [mm]' 'RP_AP Loc Y Min Stress [mm]' 'RP_AP Sum [Pa]'};
+    map_quad_LP_stats(1,:) = {'Time [s]' 'LP_AC Mean [Pa]' 'LP_AC Max [Pa]' 'LP_AC Loc X Max Stress [mm]' 'LP_AC Loc Y Max Stress [mm]' 'LP_AC Sum [Pa]'...
+        'LP_PC Mean [Pa]' 'LP_PC Max [Pa]' 'LP_PC Loc X Max Stress [mm]' 'LP_PC Loc Y Max Stress [mm]' 'LP_PC Sum [Pa]'...
+        'LP_PP Mean [Pa]' 'LP_PP Max [Pa]' 'LP_PP Loc X Max Stress [mm]' 'LP_PP Loc Y Max Stress [mm]' 'LP_PP Sum [Pa]'...
+        'LP_AP Mean [Pa]' 'LP_AP Max [Pa]' 'LP_AP Loc X Max Stress [mm]' 'LP_AP Loc Y Max Stress [mm]' 'LP_AP Sum [Pa]'};
+    map_quad_RP_stats(1,:) = {'Time [s]' 'RP_AC Mean [Pa]' 'RP_AC Max [Pa]' 'RP_AC Loc X Max Stress [mm]' 'RP_AC Loc Y Max Stress [mm]' 'RP_AC Sum [Pa]'...
+        'RP_PC Mean [Pa]' 'RP_PC Max [Pa]' 'RP_PC Loc X Max Stress [mm]' 'RP_PC Loc Y Max Stress [mm]' 'RP_PC Sum [Pa]'...
+        'RP_PP Mean [Pa]' 'RP_PP Max [Pa]' 'RP_PP Loc X Max Stress [mm]' 'RP_PP Loc Y Max Stress [mm]' 'RP_PP Sum [Pa]'...
+        'RP_AP Mean [Pa]' 'RP_AP Max [Pa]' 'RP_AP Loc X Max Stress [mm]' 'RP_AP Loc Y Max Stress [mm]' 'RP_AP Sum [Pa]'};
 
     if strcmp(get(handles.pattern_register, 'Checked'), 'on')
         map_quad_LP_stats(1,end+1:end+2) = {'Percent Gait' 'Flexion Angle [deg]'};
@@ -3332,21 +3412,21 @@ if ~isequal(file,0)
 
         if strcmp(get(handles.include_zero, 'Checked'), 'on') && LP_SAVE
             [LP_AC_max_loc_y, LP_AC_max_loc_x] = find(LP_AC == max(max(LP_AC(~isnan(LP_AC)))), 1);
-            [LP_AC_min_loc_y, LP_AC_min_loc_x] = find(LP_AC == min(min(LP_AC(~isnan(LP_AC)))), 1);
+%             [LP_AC_min_loc_y, LP_AC_min_loc_x] = find(LP_AC == min(min(LP_AC(~isnan(LP_AC)))), 1);
             
             [LP_PC_max_loc_y, LP_PC_max_loc_x] = find(LP_PC == max(max(LP_PC(~isnan(LP_PC)))), 1);
-            [LP_PC_min_loc_y, LP_PC_min_loc_x] = find(LP_PC == min(min(LP_PC(~isnan(LP_PC)))), 1);
+%             [LP_PC_min_loc_y, LP_PC_min_loc_x] = find(LP_PC == min(min(LP_PC(~isnan(LP_PC)))), 1);
             
             [LP_PP_max_loc_y, LP_PP_max_loc_x] = find(LP_PP == max(max(LP_PP(~isnan(LP_PP)))), 1);
-            [LP_PP_min_loc_y, LP_PP_min_loc_x] = find(LP_PP == min(min(LP_PP(~isnan(LP_PP)))), 1);
+%             [LP_PP_min_loc_y, LP_PP_min_loc_x] = find(LP_PP == min(min(LP_PP(~isnan(LP_PP)))), 1);
             
             [LP_AP_max_loc_y, LP_AP_max_loc_x] = find(LP_AP == max(max(LP_AP(~isnan(LP_AP)))), 1);
-            [LP_AP_min_loc_y, LP_AP_min_loc_x] = find(LP_AP == min(min(LP_AP(~isnan(LP_AP)))), 1);
+%             [LP_AP_min_loc_y, LP_AP_min_loc_x] = find(LP_AP == min(min(LP_AP(~isnan(LP_AP)))), 1);
             
-            temp_map_stats = {num2str(time(index)) num2str(mean(mean(LP_AC(~isnan(LP_AC))))) num2str(max(max(LP_AC(~isnan(LP_AC))))) num2str(LP_AC_max_loc_x) num2str(LP_AC_max_loc_y) num2str(min(min(LP_AC(~isnan(LP_AC))))) num2str(LP_AC_min_loc_x) num2str(LP_AC_min_loc_y) num2str(sum(sum(LP_AC(~isnan(LP_AC)))))...
-                num2str(mean(mean(LP_PC(~isnan(LP_PC))))) num2str(max(max(LP_PC(~isnan(LP_PC))))) num2str(LP_PC_max_loc_x) num2str(LP_PC_max_loc_y) num2str(min(min(LP_PC(~isnan(LP_PC))))) num2str(LP_PC_min_loc_x) num2str(LP_PC_min_loc_y) num2str(sum(sum(LP_PC(~isnan(LP_PC)))))...
-                num2str(mean(mean(LP_PP(~isnan(LP_PP))))) num2str(max(max(LP_PP(~isnan(LP_PP))))) num2str(LP_PP_max_loc_x) num2str(LP_PP_max_loc_y) num2str(min(min(LP_PP(~isnan(LP_PP))))) num2str(LP_PP_min_loc_x) num2str(LP_PP_min_loc_y) num2str(sum(sum(LP_PP(~isnan(LP_PP)))))...
-                num2str(mean(mean(LP_AP(~isnan(LP_AP))))) num2str(max(max(LP_AP(~isnan(LP_AP))))) num2str(LP_AP_max_loc_x) num2str(LP_AP_max_loc_y) num2str(min(min(LP_AP(~isnan(LP_AP))))) num2str(LP_AP_min_loc_x) num2str(LP_AP_min_loc_y) num2str(sum(sum(LP_AP(~isnan(LP_AP)))))};
+            temp_map_stats = {num2str(time(index)) num2str(mean(mean(LP_AC(~isnan(LP_AC))))) num2str(max(max(LP_AC(~isnan(LP_AC))))) num2str(LP_AC_max_loc_x) num2str(LP_AC_max_loc_y) num2str(sum(sum(LP_AC(~isnan(LP_AC)))))...
+                num2str(mean(mean(LP_PC(~isnan(LP_PC))))) num2str(max(max(LP_PC(~isnan(LP_PC))))) num2str(LP_PC_max_loc_x) num2str(LP_PC_max_loc_y) num2str(sum(sum(LP_PC(~isnan(LP_PC)))))...
+                num2str(mean(mean(LP_PP(~isnan(LP_PP))))) num2str(max(max(LP_PP(~isnan(LP_PP))))) num2str(LP_PP_max_loc_x) num2str(LP_PP_max_loc_y) num2str(sum(sum(LP_PP(~isnan(LP_PP)))))...
+                num2str(mean(mean(LP_AP(~isnan(LP_AP))))) num2str(max(max(LP_AP(~isnan(LP_AP))))) num2str(LP_AP_max_loc_x) num2str(LP_AP_max_loc_y) num2str(sum(sum(LP_AP(~isnan(LP_AP)))))};
             if strcmp(get(handles.pattern_register, 'Checked'), 'on')
                 temp_map_stats(1,end+1:end+2) = {num2str(handles.gait_time(index)/handles.Tl*100) num2str(handles.flexion_rep(index))};
             end
@@ -3354,21 +3434,21 @@ if ~isequal(file,0)
             map_quad_LP_stats(index+1, :) = temp_map_stats;
         elseif LP_SAVE
             [LP_AC_max_loc_y, LP_AC_max_loc_x] = find(LP_AC == max(max(LP_AC(~isnan(LP_AC)))), 1);
-            [LP_AC_min_loc_y, LP_AC_min_loc_x] = find(LP_AC == min(min(LP_AC(~isnan(LP_AC) & LP_AC ~= 0))), 1);
-
+%             [LP_AC_min_loc_y, LP_AC_min_loc_x] = find(LP_AC == min(min(LP_AC(~isnan(LP_AC) & LP_AC ~= 0))), 1);
+            
             [LP_PC_max_loc_y, LP_PC_max_loc_x] = find(LP_PC == max(max(LP_PC(~isnan(LP_PC)))), 1);
-            [LP_PC_min_loc_y, LP_PC_min_loc_x] = find(LP_PC == min(min(LP_PC(~isnan(LP_PC) & LP_PC ~= 0))), 1);
+%             [LP_PC_min_loc_y, LP_PC_min_loc_x] = find(LP_PC == min(min(LP_PC(~isnan(LP_PC) & LP_PC ~= 0))), 1);
             
             [LP_PP_max_loc_y, LP_PP_max_loc_x] = find(LP_PP == max(max(LP_PP(~isnan(LP_PP)))), 1);
-            [LP_PP_min_loc_y, LP_PP_min_loc_x] = find(LP_PP == min(min(LP_PP(~isnan(LP_PP) & LP_PP ~= 0))), 1);
+%             [LP_PP_min_loc_y, LP_PP_min_loc_x] = find(LP_PP == min(min(LP_PP(~isnan(LP_PP) & LP_PP ~= 0))), 1);
             
             [LP_AP_max_loc_y, LP_AP_max_loc_x] = find(LP_AP == max(max(LP_AP(~isnan(LP_AP)))), 1);
-            [LP_AP_min_loc_y, LP_AP_min_loc_x] = find(LP_AP == min(min(LP_AP(~isnan(LP_AP) & LP_AP ~= 0))), 1);
+%             [LP_AP_min_loc_y, LP_AP_min_loc_x] = find(LP_AP == min(min(LP_AP(~isnan(LP_AP) & LP_AP ~= 0))), 1);
             
-            temp_map_stats = {num2str(time(index)) num2str(mean(mean(LP_AC(~isnan(LP_AC))))) num2str(max(max(LP_AC(~isnan(LP_AC))))) num2str(LP_AC_max_loc_x) num2str(LP_AC_max_loc_y) num2str(min(min(LP_AC(~isnan(LP_AC) & LP_AC ~= 0)))) num2str(LP_AC_min_loc_x) num2str(LP_AC_min_loc_y) num2str(sum(sum(LP_AC(~isnan(LP_AC)))))...
-                num2str(mean(mean(LP_PC(~isnan(LP_PC))))) num2str(max(max(LP_PC(~isnan(LP_PC))))) num2str(LP_PC_max_loc_x) num2str(LP_PC_max_loc_y) num2str(min(min(LP_PC(~isnan(LP_PC) & LP_PC ~= 0)))) num2str(LP_PC_min_loc_x) num2str(LP_PC_min_loc_y) num2str(sum(sum(LP_PC(~isnan(LP_PC)))))...
-                num2str(mean(mean(LP_PP(~isnan(LP_PP))))) num2str(max(max(LP_PP(~isnan(LP_PP))))) num2str(LP_PP_max_loc_x) num2str(LP_PP_max_loc_y) num2str(min(min(LP_PP(~isnan(LP_PP) & LP_PP ~= 0)))) num2str(LP_PP_min_loc_x) num2str(LP_PP_min_loc_y) num2str(sum(sum(LP_PP(~isnan(LP_PP)))))...
-                num2str(mean(mean(LP_AP(~isnan(LP_AP))))) num2str(max(max(LP_AP(~isnan(LP_AP))))) num2str(LP_AP_max_loc_x) num2str(LP_AP_max_loc_y) num2str(min(min(LP_AP(~isnan(LP_AP) & LP_AP ~= 0)))) num2str(LP_AP_min_loc_x) num2str(LP_AP_min_loc_y) num2str(sum(sum(LP_AP(~isnan(LP_AP)))))};
+            temp_map_stats = {num2str(time(index)) num2str(mean(mean(LP_AC(~isnan(LP_AC))))) num2str(max(max(LP_AC(~isnan(LP_AC))))) num2str(LP_AC_max_loc_x) num2str(LP_AC_max_loc_y) num2str(sum(sum(LP_AC(~isnan(LP_AC)))))...
+                num2str(mean(mean(LP_PC(~isnan(LP_PC))))) num2str(max(max(LP_PC(~isnan(LP_PC))))) num2str(LP_PC_max_loc_x) num2str(LP_PC_max_loc_y) num2str(sum(sum(LP_PC(~isnan(LP_PC)))))...
+                num2str(mean(mean(LP_PP(~isnan(LP_PP))))) num2str(max(max(LP_PP(~isnan(LP_PP))))) num2str(LP_PP_max_loc_x) num2str(LP_PP_max_loc_y) num2str(sum(sum(LP_PP(~isnan(LP_PP)))))...
+                num2str(mean(mean(LP_AP(~isnan(LP_AP))))) num2str(max(max(LP_AP(~isnan(LP_AP))))) num2str(LP_AP_max_loc_x) num2str(LP_AP_max_loc_y) num2str(sum(sum(LP_AP(~isnan(LP_AP)))))};
             if strcmp(get(handles.pattern_register, 'Checked'), 'on')
                 temp_map_stats(1,end+1:end+2) = {num2str(handles.gait_time(index)/handles.Tl*100) num2str(handles.flexion_rep(index))};
             end
@@ -3378,21 +3458,21 @@ if ~isequal(file,0)
 
         if strcmp(get(handles.include_zero, 'Checked'), 'on') && RP_SAVE
             [RP_AC_max_loc_y, RP_AC_max_loc_x] = find(RP_AC == max(max(RP_AC(~isnan(RP_AC)))), 1);
-            [RP_AC_min_loc_y, RP_AC_min_loc_x] = find(RP_AC == min(min(RP_AC(~isnan(RP_AC)))), 1);
+%             [RP_AC_min_loc_y, RP_AC_min_loc_x] = find(RP_AC == min(min(RP_AC(~isnan(RP_AC)))), 1);
             
             [RP_PC_max_loc_y, RP_PC_max_loc_x] = find(RP_PC == max(max(RP_PC(~isnan(RP_PC)))), 1);
-            [RP_PC_min_loc_y, RP_PC_min_loc_x] = find(RP_PC == min(min(RP_PC(~isnan(RP_PC)))), 1);
+%             [RP_PC_min_loc_y, RP_PC_min_loc_x] = find(RP_PC == min(min(RP_PC(~isnan(RP_PC)))), 1);
             
             [RP_PP_max_loc_y, RP_PP_max_loc_x] = find(RP_PP == max(max(RP_PP(~isnan(RP_PP)))), 1);
-            [RP_PP_min_loc_y, RP_PP_min_loc_x] = find(RP_PP == min(min(RP_PP(~isnan(RP_PP)))), 1);
+%             [RP_PP_min_loc_y, RP_PP_min_loc_x] = find(RP_PP == min(min(RP_PP(~isnan(RP_PP)))), 1);
             
             [RP_AP_max_loc_y, RP_AP_max_loc_x] = find(RP_AP == max(max(RP_AP(~isnan(RP_AP)))), 1);
-            [RP_AP_min_loc_y, RP_AP_min_loc_x] = find(RP_AP == min(min(RP_AP(~isnan(RP_AP)))), 1);
+%             [RP_AP_min_loc_y, RP_AP_min_loc_x] = find(RP_AP == min(min(RP_AP(~isnan(RP_AP)))), 1);
             
-            temp_map_stats = {num2str(time(index)) num2str(mean(mean(RP_AC(~isnan(RP_AC))))) num2str(max(max(RP_AC(~isnan(RP_AC))))) num2str(RP_AC_max_loc_x) num2str(RP_AC_max_loc_y) num2str(min(min(RP_AC(~isnan(RP_AC))))) num2str(RP_AC_min_loc_x) num2str(RP_AC_min_loc_y) num2str(sum(sum(RP_AC(~isnan(RP_AC)))))...
-                num2str(mean(mean(RP_PC(~isnan(RP_PC))))) num2str(max(max(RP_PC(~isnan(RP_PC))))) num2str(RP_PC_max_loc_x) num2str(RP_PC_max_loc_y) num2str(min(min(RP_PC(~isnan(RP_PC))))) num2str(RP_PC_min_loc_x) num2str(RP_PC_min_loc_y) num2str(sum(sum(RP_PC(~isnan(RP_PC)))))...
-                num2str(mean(mean(RP_PP(~isnan(RP_PP))))) num2str(max(max(RP_PP(~isnan(RP_PP))))) num2str(RP_PP_max_loc_x) num2str(RP_PP_max_loc_y) num2str(min(min(LP_PP(~isnan(RP_PP))))) num2str(RP_PP_min_loc_x) num2str(RP_PP_min_loc_y) num2str(sum(sum(RP_PP(~isnan(RP_PP)))))...
-                num2str(mean(mean(LP_AP(~isnan(RP_AP))))) num2str(max(max(LP_AP(~isnan(RP_AP))))) num2str(RP_AP_max_loc_x) num2str(RP_AP_max_loc_y) num2str(min(min(LP_AP(~isnan(RP_AP))))) num2str(RP_AP_min_loc_x) num2str(RP_AP_min_loc_y) num2str(sum(sum(RP_AP(~isnan(RP_AP)))))};
+            temp_map_stats = {num2str(time(index)) num2str(mean(mean(RP_AC(~isnan(RP_AC))))) num2str(max(max(RP_AC(~isnan(RP_AC))))) num2str(RP_AC_max_loc_x) num2str(RP_AC_max_loc_y) num2str(sum(sum(RP_AC(~isnan(RP_AC)))))...
+                num2str(mean(mean(RP_PC(~isnan(RP_PC))))) num2str(max(max(RP_PC(~isnan(RP_PC))))) num2str(RP_PC_max_loc_x) num2str(RP_PC_max_loc_y) num2str(sum(sum(RP_PC(~isnan(RP_PC)))))...
+                num2str(mean(mean(RP_PP(~isnan(RP_PP))))) num2str(max(max(RP_PP(~isnan(RP_PP))))) num2str(RP_PP_max_loc_x) num2str(RP_PP_max_loc_y) num2str(sum(sum(RP_PP(~isnan(RP_PP)))))...
+                num2str(mean(mean(LP_AP(~isnan(RP_AP))))) num2str(max(max(LP_AP(~isnan(RP_AP))))) num2str(RP_AP_max_loc_x) num2str(RP_AP_max_loc_y) num2str(sum(sum(RP_AP(~isnan(RP_AP)))))};
             if strcmp(get(handles.pattern_register, 'Checked'), 'on')
                 temp_map_stats(1,end+1:end+2) = {num2str(handles.gait_time(index)/handles.Tl*100) num2str(handles.flexion_rep(index))};
             end
@@ -3401,24 +3481,24 @@ if ~isequal(file,0)
         elseif RP_SAVE
             RP_AC(RP_AC == 0) = 1e-20;
             [RP_AC_max_loc_y, RP_AC_max_loc_x] = find(RP_AC == max(max(RP_AC(~isnan(RP_AC)))), 1);
-            [RP_AC_min_loc_y, RP_AC_min_loc_x] = find(RP_AC == min(min(RP_AC(~isnan(RP_AC) & RP_AC ~= 0))), 1);
+%             [RP_AC_min_loc_y, RP_AC_min_loc_x] = find(RP_AC == min(min(RP_AC(~isnan(RP_AC) & RP_AC ~= 0))), 1);
             
             RP_PC(RP_PC == 0) = 1e-20;
             [RP_PC_max_loc_y, RP_PC_max_loc_x] = find(RP_PC == max(max(RP_PC(~isnan(RP_PC)))), 1);
-            [RP_PC_min_loc_y, RP_PC_min_loc_x] = find(RP_PC == min(min(RP_PC(~isnan(RP_PC) & RP_PC ~= 0))), 1);
+%             [RP_PC_min_loc_y, RP_PC_min_loc_x] = find(RP_PC == min(min(RP_PC(~isnan(RP_PC) & RP_PC ~= 0))), 1);
             
             RP_PP(RP_PP == 0) = 1e-20;
             [RP_PP_max_loc_y, RP_PP_max_loc_x] = find(RP_PP == max(max(RP_PP(~isnan(RP_PP)))), 1);
-            [RP_PP_min_loc_y, RP_PP_min_loc_x] = find(RP_PP == min(min(RP_PP(~isnan(RP_PP) & RP_PP ~= 0))), 1);
+%             [RP_PP_min_loc_y, RP_PP_min_loc_x] = find(RP_PP == min(min(RP_PP(~isnan(RP_PP) & RP_PP ~= 0))), 1);
             
             RP_AP(RP_AP == 0) = 1e-20;
             [RP_AP_max_loc_y, RP_AP_max_loc_x] = find(RP_AP == max(max(RP_AP(~isnan(RP_AP)))), 1);
-            [RP_AP_min_loc_y, RP_AP_min_loc_x] = find(RP_AP == min(min(RP_AP(~isnan(RP_AP) & RP_AP ~= 0))), 1);
+%             [RP_AP_min_loc_y, RP_AP_min_loc_x] = find(RP_AP == min(min(RP_AP(~isnan(RP_AP) & RP_AP ~= 0))), 1);
             
-            temp_map_stats = {num2str(time(index)) num2str(mean(mean(RP_AC(~isnan(RP_AC))))) num2str(max(max(RP_AC(~isnan(RP_AC))))) num2str(RP_AC_max_loc_x) num2str(RP_AC_max_loc_y) num2str(min(min(RP_AC(~isnan(RP_AC) & RP_AC ~= 0)))) num2str(RP_AC_min_loc_x) num2str(RP_AC_min_loc_y) num2str(sum(sum(RP_AC(~isnan(RP_AC)))))...
-                num2str(mean(mean(RP_PC(~isnan(RP_PC))))) num2str(max(max(RP_PC(~isnan(RP_PC))))) num2str(RP_PC_max_loc_x) num2str(RP_PC_max_loc_y) num2str(min(min(RP_PC(~isnan(RP_PC) & RP_PC ~= 0)))) num2str(RP_PC_min_loc_x) num2str(RP_PC_min_loc_y) num2str(sum(sum(RP_PC(~isnan(RP_PC)))))...
-                num2str(mean(mean(RP_PP(~isnan(RP_PP))))) num2str(max(max(RP_PP(~isnan(RP_PP))))) num2str(RP_PP_max_loc_x) num2str(RP_PP_max_loc_y) num2str(min(min(RP_PP(~isnan(RP_PP) & RP_PP ~= 0)))) num2str(RP_PP_min_loc_x) num2str(RP_PP_min_loc_y) num2str(sum(sum(RP_PP(~isnan(RP_PP)))))...
-                num2str(mean(mean(RP_AP(~isnan(RP_AP))))) num2str(max(max(RP_AP(~isnan(RP_AP))))) num2str(RP_AP_max_loc_x) num2str(RP_AP_max_loc_y) num2str(min(min(RP_AP(~isnan(RP_AP) & RP_AP ~= 0)))) num2str(RP_AP_min_loc_x) num2str(RP_AP_min_loc_y) num2str(sum(sum(RP_AP(~isnan(RP_AP)))))};
+            temp_map_stats = {num2str(time(index)) num2str(mean(mean(RP_AC(~isnan(RP_AC))))) num2str(max(max(RP_AC(~isnan(RP_AC))))) num2str(RP_AC_max_loc_x) num2str(RP_AC_max_loc_y) num2str(sum(sum(RP_AC(~isnan(RP_AC)))))...
+                num2str(mean(mean(RP_PC(~isnan(RP_PC))))) num2str(max(max(RP_PC(~isnan(RP_PC))))) num2str(RP_PC_max_loc_x) num2str(RP_PC_max_loc_y) num2str(sum(sum(RP_PC(~isnan(RP_PC)))))...
+                num2str(mean(mean(RP_PP(~isnan(RP_PP))))) num2str(max(max(RP_PP(~isnan(RP_PP))))) num2str(RP_PP_max_loc_x) num2str(RP_PP_max_loc_y) num2str(sum(sum(RP_PP(~isnan(RP_PP)))))...
+                num2str(mean(mean(RP_AP(~isnan(RP_AP))))) num2str(max(max(RP_AP(~isnan(RP_AP))))) num2str(RP_AP_max_loc_x) num2str(RP_AP_max_loc_y) num2str(sum(sum(RP_AP(~isnan(RP_AP)))))};
             if strcmp(get(handles.pattern_register, 'Checked'), 'on')
                 temp_map_stats(1,end+1:end+2) = {num2str(handles.gait_time(index)/handles.Tl*100) num2str(handles.flexion_rep(index))};
             end
@@ -3432,11 +3512,11 @@ if ~isequal(file,0)
     end
     
     if LP_SAVE
-        csvwrite([pathfile 'LP_' file], map_quad_LP_stats)
+        csvwrite([pathfile 'LP_' file], map_quad_LP_stats, 0)
     end
     
     if RP_SAVE
-        csvwrite([pathfile 'RP_' file], map_quad_RP_stats)
+        csvwrite([pathfile 'RP_' file], map_quad_RP_stats, 0)
     end
 end
 
