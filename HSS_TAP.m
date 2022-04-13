@@ -3120,21 +3120,22 @@ else
         set(hObject, 'Checked', 'off')
     end
     
+    if nargin == 3
+        handles.start_cycle = str2num(time_span{1});
+        handles.end_cycle = str2num(time_span{2});
+    else
+        handles.start_cycle = start_cycle_input;
+        handles.end_cycle = end_cycle_input;
+    end
 end
 
-if nargin == 3
-    handles.start_cycle = str2num(time_span{1});
-    handles.end_cycle = str2num(time_span{2});
-    
-    guidata(hObject, handles);
-    
-    refresh_fig(hObject, handles)
-else
-    handles.start_cycle = start_cycle_input;
-    handles.end_cycle = end_cycle_input;
-end
 
 updated_guidata = handles;
+
+guidata(hObject, handles);
+
+refresh_fig(hObject, handles)
+
 
 
 
@@ -3622,12 +3623,6 @@ if ~isequal(file,0)
         handles.base_file = [file '_medial_WCoC_avg.csv'];
         guidata(hObject, handles);
         save_centroid_Callback(hObject, 140, handles);
-        
-        set(handles.avg_data, 'checked', 'off');
-
-        handles = avg_data_Callback(handles.avg_data, 140, handles, 15, 19);
-        set(handles.avg_data, 'checked', 'off');
-        guidata(hObject, handles);
         
         handles = avg_data_Callback(handles.avg_data, 140, handles, handles.start_cycle, handles.end_cycle);
         set(handles.avg_data, 'checked', 'off');
