@@ -3629,7 +3629,7 @@ if ~isequal(file,0)
         set(handles.avg_data, 'checked', 'off');
         guidata(hObject, handles);
         
-        handles = avg_data_Callback(handles.avg_data, 140, handles, handles.start_cycle/handles.window_size+1, handles.end_cycle/handles.window_size+1);
+        handles = avg_data_Callback(handles.avg_data, 140, handles, handles.start_cycle, handles.end_cycle);
         set(handles.avg_data, 'checked', 'off');
         set(handles.both_plateaus, 'Value', true);
         handles = parse_tekscan_map(hObject, handles);
