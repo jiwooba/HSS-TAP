@@ -37,7 +37,7 @@ end
 row_space = handles.tekvar{selected_condition}.header.row_spacing*fScale;
 col_space = handles.tekvar{selected_condition}.header.col_spacing*fScale;
 sensel_area = row_space*col_space;
-force{selected_condition} = force{selected_condition} * fScale^2;
+% force{selected_condition} = force{selected_condition} * fScale^2;
 
 %% Removal all data currently plotted in GUI window
 delete(handles.pressure_map.Children)
@@ -409,14 +409,10 @@ cla(handles.cycle_tracker_axes);
 cla(handles.axes2);
 hold(handles.cycle_tracker_axes, 'on');
    
-plot(handles.cycle_tracker_axes, time, force{selected_condition}(time_order{selected_condition}), 'HitTest', 'off');
+plot(handles.cycle_tracker_axes, time, force{selected_condition}(time_order{selected_condition})*fScale^2, 'HitTest', 'off');
 
 if get(handles.risk_map_checkbox, 'Value')
-    if strcmp(get(handles.in_mm, 'Checked'), 'on')
-        curr_plot_handle = plot(handles.cycle_tracker_axes, time, force{selected_comparison}(time_order{selected_comparison}), 'r');
-    else
-        curr_plot_handle = plot(handles.cycle_tracker_axes, time, force{selected_comparison}(time_order{selected_comparison})*100, 'r');
-    end
+    curr_plot_handle = plot(handles.cycle_tracker_axes, time, force{selected_comparison}(time_order{selected_comparison})* fScale^2, 'r');
     set(curr_plot_handle, 'HitTest', 'off');
 end
 
