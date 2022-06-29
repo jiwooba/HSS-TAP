@@ -23,7 +23,7 @@ function varargout = HSS_TAP(varargin)
 
 % Edit the above text to modify the response to help HSS_TAP
 
-% Last Modified by GUIDE v2.5 13-Apr-2022 14:17:48
+% Last Modified by GUIDE v2.5 03-May-2022 12:46:42
 
 %March 2011 created by Tony Chen
 
@@ -56,6 +56,10 @@ function varargout = HSS_TAP(varargin)
 %Jan 2021 updated by Tony C and Ashley P
 %-- 2. Removed unnecessary functions and code for distribution
 %-- 3. Added in Training Code
+
+%May 3, 2022 updated by Tony C
+%-- 1. Added Difference  Regions code to look at areas with difference
+%between two specimens/conditions
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -2286,8 +2290,7 @@ if ~isequal(file,0)
                 end
                 
                 mag_roi = handles.curr_plot*NaN;
-                mag_roi(handles.in(:,:,loc) == 1) = handles.curr_plot(handles.in(:,:,loc) == 1);
-                %mag_roi = get_selection_ele(senselvar{selected_condition}(:,:,time_order{selected_condition}(index)),handles.in(:,:,locs));
+                mag_roi = get_selection_ele(senselvar{selected_condition}(:,:,time_order{selected_condition}(index)),handles.in(:,:,locs));
             else
                 mag_roi = senselvar{selected_condition}(:,:,time_order{selected_condition}(index));
             end
@@ -6217,3 +6220,10 @@ else
 end
 
 refresh_fig(hObject, handles);
+
+
+% --------------------------------------------------------------------
+function diffRegions_Callback(hObject, eventdata, handles)
+% hObject    handle to diffRegions (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
