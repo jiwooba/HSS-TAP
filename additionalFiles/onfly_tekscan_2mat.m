@@ -61,11 +61,11 @@ while ~strcmpi(name, 'frame') && ~strcmpi(name, '') && ~strcmpi(name, ',,,,,,,,,
         % parse out units used to save distance measurements
         if strcmpi(name, 'row_spacing') || strcmpi(name, 'col_spacing')
             switch units
-                case 'millimeters'
+                case {'millimeters', 'mm'}
                     header.dUnits='mm';
-                case 'centimeters'
+                case {'centimeters', 'cm'}
                     header.dUnits='cm';
-                case 'meters'
+                case {'meters', 'm'}
                     header.dUnits='m';
             end
         end
