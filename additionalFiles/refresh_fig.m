@@ -74,6 +74,16 @@ if ~get(handles.risk_map_checkbox, 'Value') % plot stress data
     colormap(handles.pressure_map, cmap);
     caxis(handles.pressure_map, [handles.min_crange handles.max_crange]);    
     grid(handles.pressure_map, 'off')
+
+    if strcmp(get(handles.Map3D, 'Checked'), 'on')
+        surf(handles.ax3D, senselvar{selected_condition}(:,:,time_order{selected_condition}(index)));
+        set(handles.ax3D, 'YDir', 'reverse');
+        % set color map
+        cmap = colormap(handles.ax3D, jet(255));
+        cmap = [0 0 0; cmap];
+        colormap(handles.ax3D, cmap);
+        caxis(handles.ax3D, [handles.min_crange handles.max_crange]);
+    end
 else % plot a comparison group
     set(handles.risk_type_dropdown, 'Visible', 'on');
     set(handles.comparison_selector, 'Visible', 'on');
@@ -202,8 +212,9 @@ else % plot a comparison group
             set(handles.pressure_map_slider, 'Visible', 'off');
             handles.curr_plot = load_risk;
             caxis(handles.pressure_map, [0 1])
-            cmap = colormap(handles.pressure_map, hsv(255));
-            cmap = [0 0 0; cmap];
+%             cmap = colormap(handles.pressure_map, hsv(255));
+%             cmap = [0 0 0; cmap];
+            cmap = colormap(handles.pressure_map, hot(256));
             colormap(handles.pressure_map, cmap);
             xlim(handles.pressure_map, [0 handles.tekvar{selected_comparison}.header.cols]);
             ylim(handles.pressure_map, [0 handles.tekvar{selected_comparison}.header.rows]);
@@ -432,7 +443,8 @@ if strcmp(get(handles.pattern_register, 'Checked'), 'on') && ~get(handles.risk_m
         plot(handles.axes2, [0 handles.tekvar{selected_condition}.data_a.time(end)], [0 0], 'LineStyle', '--', 'Color',[0.749 0.749 0], 'HitTest', 'off')
         plot(handles.axes2, handles.tekvar{selected_condition}.data_a.time(1:numel(handles.(handles.kinematics(selected_condition).order{selected_second_axis}))), handles.(handles.kinematics(selected_condition).order{selected_second_axis}),'LineStyle','-.','Color',[0.4 0.4 0.4], 'HitTest', 'off');
         ylim(handles.axes2, [min(handles.(handles.kinematics(selected_condition).order{selected_second_axis}))-1 max(handles.(handles.kinematics(selected_condition).order{selected_second_axis}))+1])
-        curr_data_point = handles.flexion_rep(index);
+        %curr_data_point = handles.flexion_rep(index);
+        curr_data_point = handles.(handles.kinematics(selected_condition).order{selected_second_axis})(index);
         curr_data_point = [num2str(curr_data_point) handles.kinematics(selected_condition).units{selected_second_axis}];
         name = handles.kinematics(selected_condition).name{selected_second_axis};
     else
