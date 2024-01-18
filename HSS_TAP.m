@@ -23,7 +23,7 @@ function varargout = HSS_TAP(varargin)
 
 % Edit the above text to modify the response to help HSS_TAP
 
-% Last Modified by GUIDE v2.5 03-May-2022 12:46:42
+% Last Modified by GUIDE v2.5 18-Jan-2024 11:18:01
 
 %March 2011 created by Tony Chen
 
@@ -2601,13 +2601,8 @@ if ~isequal(file,0)
     x = handles.max_crange/14:handles.max_crange/14:handles.max_crange;
     index = round(get(handles.pressure_map_slider, 'Value')); %gets the current value of the slider
     
-    if get(handles.test_condition_toggle, 'Value')
-        h = histogram(reshape(handles.curr_plot, numel(handles.curr_plot>str2double(get(handles.noise_floor_edit, 'String'))), 1),x);
-    else
-        h = histogram(reshape(handles.curr_plot, numel(handles.curr_plot>str2double(get(handles.noise_floor_edit, 'String'))),1),x);
-    end
-    
-    
+    h = histogram(reshape(handles.curr_plot, numel(handles.curr_plot>str2double(get(handles.noise_floor_edit, 'String'))),1),x);
+   
     histo(1,:) = {'Bin' 'Area (mm^2)'};
     for t = 1:length(x)
         histo(t+1,:) = {num2str(x(t)) num2str(h(t)*sensel_area)};
@@ -6227,3 +6222,21 @@ function diffRegions_Callback(hObject, eventdata, handles)
 % hObject    handle to diffRegions (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function Map3D_Callback(hObject, eventdata, handles)
+% hObject    handle to Map3D (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+if strcmp(get(hObject, 'Checked'), 'on')
+    set(hObject, 'Checked', 'off');
+    close(handles.fig3D)
+else
+    set(hObject, 'Checked', 'on');
+    handles.fig3D = figure;
+    handles.ax3D = axes(handles.fig3D);
+    guidata(hObject,handles);
+end
+
+refresh_fig(hObject, handles);
