@@ -312,8 +312,14 @@ if strcmpi(get(handles.roi_training, 'Checked'), 'on') % if using training modul
         if iscell(get(handles.senspec_popupmenu, 'String'))
             if strcmp(get(handles.round_ROI, 'Checked'), 'on')
                 p = plot(handles.pressure_map, round(handles.trainroibnd{t}{1,loc}(:,1)),round(handles.trainroibnd{t}{1,loc}(:,2)),'o--g');
+                if strcmp(get(handles.Map3D, 'Checked'), 'on')
+                    map2surf(handles.ax3D,senselvar{selected_condition}(:,:,time_order{selected_condition}(index)),round(handles.trainroibnd{t}{1,loc}(:,1)),round(handles.trainroibnd{t}{1,loc}(:,2)),'o--g');
+                end
             else
                 p = plot(handles.pressure_map, handles.trainroibnd{t}{1,loc}(:,1),handles.trainroibnd{t}{1,loc}(:,2),'o--g');
+                if strcmp(get(handles.Map3D, 'Checked'), 'on')
+                    map2surf(handles.ax3D,senselvar{selected_condition}(:,:,time_order{selected_condition}(index)),handles.trainroibnd{t}{1,loc}(:,1),handles.trainroibnd{t}{1,loc}(:,2),'o--g');
+                end
             end
             set(handles.stats04, 'String', ['Sensitivity: ' sprintf('%.3f',handles.sens{t}(:,:,index)) '  |  Specificity: ' sprintf('%.3f', handles.spec{t}(:,:,index))]);
             
