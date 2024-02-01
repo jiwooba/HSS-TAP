@@ -72,17 +72,19 @@ if ~get(handles.risk_map_checkbox, 'Value') % plot stress data
     cmap = colormap(handles.pressure_map, jet(255));
     cmap = [0 0 0; cmap];
     colormap(handles.pressure_map, cmap);
-    caxis(handles.pressure_map, [handles.min_crange handles.max_crange]);    
+    clim(handles.pressure_map, [handles.min_crange handles.max_crange]);    
     grid(handles.pressure_map, 'off')
 
     if strcmp(get(handles.Map3D, 'Checked'), 'on')
+        view = handles.ax3D.View;
         surf(handles.ax3D, senselvar{selected_condition}(:,:,time_order{selected_condition}(index)));
         set(handles.ax3D, 'YDir', 'reverse');
         % set color map
+        handles.ax3D.View = view;
         cmap = colormap(handles.ax3D, jet(255));
         cmap = [0 0 0; cmap];
         colormap(handles.ax3D, cmap);
-        caxis(handles.ax3D, [handles.min_crange handles.max_crange]);
+        clim(handles.ax3D, [handles.min_crange handles.max_crange]);
     end
 else % plot a comparison group
     set(handles.risk_type_dropdown, 'Visible', 'on');
@@ -109,7 +111,7 @@ else % plot a comparison group
             
             set(curr_plot_handle, 'HitTest', 'off');
             handles.curr_plot = magnitude_risk{selected_condition, selected_comparison}(:,:, index);
-            caxis(handles.pressure_map, [-1*max([handles.min_mag_crange handles.max_mag_crange]) max([handles.min_mag_crange handles.max_mag_crange])]);
+            clim(handles.pressure_map, [-1*max([handles.min_mag_crange handles.max_mag_crange]) max([handles.min_mag_crange handles.max_mag_crange])]);
             colormap(handles.pressure_map, cmap);
             set(handles.pressure_map_slider, 'Visible', 'on');
             xlim(handles.pressure_map, [0 handles.tekvar{selected_comparison}.header.cols]);
@@ -135,7 +137,7 @@ else % plot a comparison group
             
             set(curr_plot_handle, 'HitTest', 'off');
             handles.curr_plot = mag_risk_total;
-            caxis(handles.pressure_map, [-1*max([handles.min_mag_crange handles.max_mag_crange]) max([handles.min_mag_crange handles.max_mag_crange])]);
+            clim(handles.pressure_map, [-1*max([handles.min_mag_crange handles.max_mag_crange]) max([handles.min_mag_crange handles.max_mag_crange])]);
             colormap(handles.pressure_map, cmap);
             set(handles.pressure_map_slider, 'Visible', 'off');
             xlim(handles.pressure_map, [0 handles.tekvar{selected_comparison}.header.cols]);
@@ -160,7 +162,7 @@ else % plot a comparison group
             end
             set(curr_plot_handle, 'HitTest', 'off');
             handles.curr_plot = mag_risk_total;
-            caxis(handles.pressure_map, [-1*max([handles.min_mag_crange handles.max_mag_crange]) max([handles.min_mag_crange handles.max_mag_crange])]);
+            clim(handles.pressure_map, [-1*max([handles.min_mag_crange handles.max_mag_crange]) max([handles.min_mag_crange handles.max_mag_crange])]);
             colormap(handles.pressure_map, cmap);
             set(handles.pressure_map_slider, 'Visible', 'off');
             xlim(handles.pressure_map, [0 handles.tekvar{selected_comparison}.header.cols]);
@@ -190,7 +192,7 @@ else % plot a comparison group
             
             set(curr_plot_handle, 'HitTest', 'off');
             handles.curr_plot = mag_risk_total;
-            caxis(handles.pressure_map, [-1*max([handles.min_mag_crange handles.max_mag_crange]) max([handles.min_mag_crange handles.max_mag_crange])]);
+            clim(handles.pressure_map, [-1*max([handles.min_mag_crange handles.max_mag_crange]) max([handles.min_mag_crange handles.max_mag_crange])]);
             colormap(handles.pressure_map, cmap);
             set(handles.pressure_map_slider, 'Visible', 'off');
             xlim(handles.pressure_map, [0 handles.tekvar{selected_comparison}.header.cols]);
@@ -211,7 +213,7 @@ else % plot a comparison group
             set(curr_plot_handle, 'HitTest', 'off');
             set(handles.pressure_map_slider, 'Visible', 'off');
             handles.curr_plot = load_risk;
-            caxis(handles.pressure_map, [0 1])
+            clim(handles.pressure_map, [0 1])
 %             cmap = colormap(handles.pressure_map, hsv(255));
 %             cmap = [0 0 0; cmap];
             cmap = colormap(handles.pressure_map, hot(256));
@@ -242,7 +244,7 @@ else % plot a comparison group
             set(curr_plot_handle, 'HitTest', 'off');
             handles.curr_plot = mag_risk_total.*load_risk;
             
-            caxis(handles.pressure_map, [-1*max([handles.min_mag_crange handles.max_mag_crange]) max([handles.min_mag_crange handles.max_mag_crange])]);
+            clim(handles.pressure_map, [-1*max([handles.min_mag_crange handles.max_mag_crange]) max([handles.min_mag_crange handles.max_mag_crange])]);
             colormap(handles.pressure_map, cmap);
             set(handles.pressure_map_slider, 'Visible', 'off');
             xlim(handles.pressure_map, [0 handles.tekvar{selected_comparison}.header.cols]);
@@ -295,8 +297,14 @@ if strcmpi(get(handles.roi_training, 'Checked'), 'on') % if using training modul
     if strcmp(get(handles.show_ROI, 'Checked'), 'on')
         if strcmp(get(handles.round_ROI, 'Checked'), 'on')
             p = plot(handles.pressure_map, round(handles.exproibnd{1,loc}(:,1)),round(handles.exproibnd{1,loc}(:,2)),'o-r');
+            if strcmp(get(handles.Map3D, 'Checked'), 'on')
+                map2surf(handles.ax3D,senselvar{selected_condition}(:,:,time_order{selected_condition}(index)),round(handles.exproibnd{1,loc}(:,1)),round(handles.exproibnd{1,loc}(:,2)),'o-r');
+            end
         else
             p = plot(handles.pressure_map, handles.exproibnd{1,loc}(:,1),handles.exproibnd{1,loc}(:,2),'o-r');
+                if strcmp(get(handles.Map3D, 'Checked'), 'on')
+                    map2surf(handles.ax3D,senselvar{selected_condition}(:,:,time_order{selected_condition}(index)),handles.exproibnd{1,loc}(:,1),handles.exproibnd{1,loc}(:,2),'o-r');
+                end
         end
         p.MarkerSize = 10;
         p.LineWidth = 2;
@@ -312,8 +320,14 @@ if strcmpi(get(handles.roi_training, 'Checked'), 'on') % if using training modul
         else
             if strcmp(get(handles.round_ROI, 'Checked'), 'on')
                 p = plot(handles.pressure_map, round(handles.trainroibnd{1,loc}(:,1)),round(handles.trainroibnd{1,loc}(:,2)),'o--g');
+                if strcmp(get(handles.Map3D, 'Checked'), 'on')
+                    map2surf(handles.ax3D,senselvar{selected_condition}(:,:,time_order{selected_condition}(index)),round(handles.trainroibnd{1,loc}(:,1)),round(handles.trainroibnd{1,loc}(:,2)),'o--g');
+                end
             else
                 p = plot(handles.pressure_map, handles.trainroibnd{1,loc}(:,1),handles.trainroibnd{1,loc}(:,2),'o--g');
+                if strcmp(get(handles.Map3D, 'Checked'), 'on')
+                    map2surf(handles.ax3D,senselvar{selected_condition}(:,:,time_order{selected_condition}(index)),handles.trainroibnd{1,loc}(:,1),handles.trainroibnd{1,loc}(:,2),'o--g');
+                end
             end
             set(handles.stats04, 'String', ['Sensitivity: ' sprintf('%.3f', handles.sens(:,:,index)) '  |  Specificity: ' sprintf('%.3f', handles.spec(:,:,index))]);
         end
@@ -336,8 +350,14 @@ elseif handles.curr_select_flag == 1 % ROI is set
     if strcmp(get(handles.show_ROI, 'Checked'), 'on')
         if strcmp(get(handles.round_ROI, 'Checked'), 'on')
             plot(handles.pressure_map, round(handles.roibnd{1,loc}(:,1)),round(handles.roibnd{1,loc}(:,2)),'.-r');
+            if strcmp(get(handles.Map3D, 'Checked'), 'on')
+                map2surf(handles.ax3D,senselvar{selected_condition}(:,:,time_order{selected_condition}(index)),round(handles.roibnd{1,loc}(:,1)),round(handles.roibnd{1,loc}(:,2)),'.-r');
+            end
         else
             plot(handles.pressure_map, handles.roibnd{1,loc}(:,1),handles.roibnd{1,loc}(:,2),'.-r');
+            if strcmp(get(handles.Map3D, 'Checked'), 'on')
+                map2surf(handles.ax3D,senselvar{selected_condition}(:,:,time_order{selected_condition}(index)),handles.roibnd{1,loc}(:,1),handles.roibnd{1,loc}(:,2),'.-r');
+            end
         end
     end
 end
