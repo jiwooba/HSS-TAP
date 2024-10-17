@@ -23,7 +23,7 @@ function varargout = HSS_TAP(varargin)
 
 % Edit the above text to modify the response to help HSS_TAP
 
-% Last Modified by GUIDE v2.5 18-Jan-2024 11:18:01
+% Last Modified by GUIDE v2.5 17-Oct-2024 15:32:19
 
 %March 2011 created by Tony Chen
 
@@ -998,6 +998,7 @@ set(handles.cycle_tracker_axes, 'HitTest', 'off');
 set(handles.pattern_register, 'Checked', 'off');
 set(handles.second_axis, 'Visible', 'off');
 set(handles.run, 'Enable', 'on');
+handles.useMaxSat = false;
 
 set(handles.both_plateaus, 'Value', 1);
 
@@ -1138,7 +1139,10 @@ function noise_floor_edit_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of noise_floor_edit as text
 %        str2double(get(hObject,'String')) returns contents of noise_floor_edit as a double
+handles.min_crange = str2double(get(hObject, 'String'));
 
+guidata(hObject, handles);
+refresh_fig(hObject, handles);
 
 % --- Executes during object creation, after setting all properties.
 function noise_floor_edit_CreateFcn(hObject, eventdata, handles)
@@ -2297,9 +2301,9 @@ if ~isequal(file,0)
         end
         
         if strcmp(get(handles.include_zero, 'Checked'), 'on')
-            [max_loc_y, max_loc_x] = find(mag_roi == max(max(mag_roi(~isnan(mag_roi)))), 1);
-            [min_loc_y, min_loc_x] = find(mag_roi == min(min(mag_roi(~isnan(mag_roi)))), 1);
-            temp_map_stats = {num2str(time(index)) num2str(mean(mean(mag_roi(~isnan(mag_roi))))) num2str(max(max(mag_roi(~isnan(mag_roi))))) num2str(max_loc_x*col_spacing) num2str(max_loc_y*row_spacing) num2str(min(min(mag_roi(~isnan(mag_roi))))) num2str(min_loc_x*col_spacing) num2str(min_loc_y*row_spacing) num2str(sum(sum(mag_roi(~isnan(mag_roi)))))};
+            [max_loc_y, max_loc_x] = find(mag_roi == max(max(mag_roi(~isnan(mag_roi) & mag_roi>=str2double(get(handles.noise_floor_edit,'String'))))), 1);
+            [min_loc_y, min_loc_x] = find(mag_roi == min(min(mag_roi(~isnan(mag_roi) & mag_roi>=str2double(get(handles.noise_floor_edit,'String'))))), 1);
+            temp_map_stats = {num2str(time(index)) num2str(mean(mean(mag_roi(~isnan(mag_roi) & mag_roi>=str2double(get(handles.noise_floor_edit,'String')))))) num2str(max(max(mag_roi(~isnan(mag_roi) & mag_roi>=str2double(get(handles.noise_floor_edit,'String')))))) num2str(max_loc_x*col_spacing) num2str(max_loc_y*row_spacing) num2str(min(min(mag_roi(~isnan(mag_roi))))) num2str(min_loc_x*col_spacing) num2str(min_loc_y*row_spacing) num2str(sum(sum(mag_roi(~isnan(mag_roi) & mag_roi>=str2double(get(handles.noise_floor_edit,'String'))))))};
             if strcmp(get(handles.pattern_register, 'Checked'), 'on')
                 temp_map_stats(1,end+1:end+2) = {num2str(handles.gait_time(index)/handles.Tl*100) num2str(handles.flexion_rep(index))};
             end
@@ -2308,11 +2312,11 @@ if ~isequal(file,0)
         else
             [max_loc_y, max_loc_x] = find(mag_roi == max(max(mag_roi)), 1);
             if ~isempty(mag_roi(~isnan(mag_roi) & mag_roi ~= 0))
-                [min_loc_y, min_loc_x] = find(mag_roi == min(min(mag_roi(~isnan(mag_roi) & mag_roi ~= 0))), 1);
+                [min_loc_y, min_loc_x] = find(mag_roi == min(min(mag_roi(~isnan(mag_roi) & mag_roi ~= 0 & mag_roi>=str2double(get(handles.noise_floor_edit,'String'))))), 1);
             else
-                [min_loc_y, min_loc_x] = find(mag_roi == 0,1);
+                [min_loc_y, min_loc_x] = find(mag_roi == 0 & mag_roi>=str2double(get(handles.noise_floor_edit,'String')),1);
             end
-            temp_map_stats = {num2str(time(index)) num2str(mean(mean(mag_roi(~isnan(mag_roi) & mag_roi~=0)*sensel_area))) num2str(max(max(mag_roi(~isnan(mag_roi))*sensel_area))) num2str(max_loc_x*col_spacing) num2str(max_loc_y*row_spacing) num2str(min(min(mag_roi(~isnan(mag_roi) & mag_roi ~= 0)*sensel_area))) num2str(min_loc_x*col_spacing) num2str(min_loc_y*row_spacing) num2str(sum(sum(mag_roi(~isnan(mag_roi))*sensel_area)))};
+            temp_map_stats = {num2str(time(index)) num2str(mean(mean(mag_roi(~isnan(mag_roi) & mag_roi~=0 & mag_roi>=str2double(get(handles.noise_floor_edit,'String')))*sensel_area))) num2str(max(max(mag_roi(~isnan(mag_roi) & mag_roi>=str2double(get(handles.noise_floor_edit,'String')))*sensel_area))) num2str(max_loc_x*col_spacing) num2str(max_loc_y*row_spacing) num2str(min(min(mag_roi(~isnan(mag_roi) & mag_roi ~= 0 & mag_roi>=str2double(get(handles.noise_floor_edit,'String')))*sensel_area))) num2str(min_loc_x*col_spacing) num2str(min_loc_y*row_spacing) num2str(sum(sum(mag_roi(~isnan(mag_roi) & mag_roi>=str2double(get(handles.noise_floor_edit,'String')))*sensel_area)))};
             if strcmp(get(handles.pattern_register, 'Checked'), 'on')
                 temp_map_stats(1,end+1:end+2) = {num2str(handles.gait_time(index)/handles.Tl*100) num2str(handles.flexion_rep(index))};
             end
@@ -2561,7 +2565,7 @@ if ~isequal(file,0) %if the file is open
                 curr_map = get_selection_ele(senselvar{selected_condition}(:,:,time_order{selected_condition}(index)),handles.in(:,:,locs));
             end
             
-            temp_contact_area = {num2str(time(index)) num2str(sensel_area*length(curr_map(curr_map>0)))}; %gets contact area at current time
+            temp_contact_area = {num2str(time(index)) num2str(sensel_area*length(curr_map(curr_map>0 & curr_map>=str2double(get(handles.noise_floor_edit,'String')))))}; %gets contact area at current time
             if strcmp(get(handles.pattern_register, 'Checked'), 'on')
                 temp_contact_area(1,end+1:end+2) = {num2str(handles.gait_time(index)/handles.Tl*100) num2str(handles.flexion_rep(index))}; %gets additional data if indicated
             end           
@@ -2632,7 +2636,12 @@ if strcmp(get(hObject, 'Checked'), 'on') % Manually set color map for Stress
     handles.max_crange = str2num(pressure_span{2});
 else % Automatically set color map max/min for Stress
     set(hObject, 'Checked', 'on')
-    handles.min_crange = 0;
+    if handles.useMaxSat
+        handles.min_crange = handles.headers.saturation_pressure*handles.persat;
+        set(handles.noise_floor_edit, 'String',num2str(handles.min_crange));
+    else
+        handles.min_crange = 0;
+    end
     handles.max_crange = handles.auto_max_crange;
 end
 
@@ -6237,6 +6246,78 @@ else
     handles.fig3D = figure;
     handles.ax3D = axes(handles.fig3D);
     guidata(hObject,handles);
+end
+
+refresh_fig(hObject, handles);
+
+
+% --- Executes on button press in useMaxSat_checkbox.
+function useMaxSat_checkbox_Callback(hObject, eventdata, handles)
+% hObject    handle to useMaxSat_checkbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of useMaxSat_checkbox
+selected_condition = get(handles.condition_selector, 'Value');
+
+if get(hObject, 'Value') == 1
+    handles.persat = 0.02;
+    handles.min_crange = handles.tekvar{selected_condition}.header.row_spacing*handles.tekvar{selected_condition}.header.saturation_pressure*handles.persat;
+    set(handles.noise_floor_edit, 'String', num2str(handles.min_crange));
+    set(handles.noise_floor_edit, 'Enable', 'off');
+    set(handles.use1MaxSat_checkbox, 'Value', 0);
+    handles.useMaxSat = true;
+    guidata(hObject,handles);
+else
+    set(handles.noise_floor_edit, 'Enable', 'on');
+    handles.useMaxSat = false;
+end
+
+refresh_fig(hObject, handles);
+
+
+% --- If Enable == 'on', executes on mouse press in 5 pixel border.
+% --- Otherwise, executes on mouse press in 5 pixel border or over useMaxSat_checkbox.
+function useMaxSat_checkbox_ButtonDownFcn(hObject, eventdata, handles)
+% hObject    handle to useMaxSat_checkbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+selected_condition = get(handles.condition_selector, 'Value');
+
+if get(hObject, 'Value') == 1
+    handles.persat = 0.02;
+    handles.min_crange = handles.tekvar{selected_condition}.header.row_spacing*handles.tekvar{selected_condition}.header.saturation_pressure*handles.persat;
+    set(handles.noise_floor_edit, 'String', num2str(handles.min_crange));
+    set(handles.noise_floor_edit, 'Enable', 'off');
+    handles.useMaxSat = true;
+    guidata(hObject,handles);
+else
+    set(handles.noise_floor_edit, 'Enable', 'on');
+    handles.useMaxSat = false;
+end
+
+refresh_fig(hObject, handles);
+
+% --- Executes on button press in use1MaxSat_checkbox.
+function use1MaxSat_checkbox_Callback(hObject, eventdata, handles)
+% hObject    handle to use1MaxSat_checkbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of use1MaxSat_checkbox
+selected_condition = get(handles.condition_selector, 'Value');
+
+if get(hObject, 'Value') == 1
+    handles.persat = 0.01;
+    handles.min_crange = handles.tekvar{selected_condition}.header.row_spacing*handles.tekvar{selected_condition}.header.saturation_pressure*handles.persat;
+    set(handles.noise_floor_edit, 'String', num2str(handles.min_crange));
+    set(handles.noise_floor_edit, 'Enable', 'off');
+    set(handles.useMaxSat_checkbox, 'Value', 0);
+    handles.useMaxSat = true;
+    guidata(hObject,handles);
+else
+    set(handles.noise_floor_edit, 'Enable', 'on');
+    handles.useMaxSat = false;
 end
 
 refresh_fig(hObject, handles);
