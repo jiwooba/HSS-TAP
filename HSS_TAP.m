@@ -2454,7 +2454,11 @@ if ~get(handles.risk_map_checkbox, 'Value') % if getting WCoCS for stress map
             raw = polyfit([Left_J Right_J], [Left_I Right_I], 1);
             m(index) = raw(1);
             b(index) = raw(2);
-            atheta(index) = 0;
+            if index > 1
+                atheta(index) = atand((m(index-1)-m(index))/(1+m(index-1)*m(index)))/(time(index)-time(index-1));
+            else
+                atheta(index) = NaN;
+            end
             temp_loc = [temp_loc m(index) b(index) atheta(index)];
         end
         
@@ -2481,7 +2485,8 @@ if ~get(handles.risk_map_checkbox, 'Value') % if getting WCoCS for stress map
         loc2(:,7) = fivepointderiv(loc2(:,6), handles.Fs);
         loc2(:,9) = fivepointderiv(loc2(:,8), handles.Fs);
         loc2(:,11) = fivepointderiv(loc2(:,10), handles.Fs);
-        loc2(:,14) = fivepointderiv(loc2(:,12), handles.Fs);
+        % loc2(:,14) = fivepointderiv(loc2(:,12), handles.Fs);
+        loc2(:,11) = atheta;
     end
 
 else % looking a comparison map between two conditions
