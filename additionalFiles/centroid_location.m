@@ -14,8 +14,8 @@ counter = 0;
 for w = 1:row
     for q = 1:col
         
-        % only calculate data above set noise threshold
-        if ~isnan(pmap(w,q)) && pmap(w,q) > noise_floor
+        % only calculate data equal to or above set noise threshold
+        if ~isnan(pmap(w,q)) && pmap(w,q) >= noise_floor
             if weight
                 weight_factor = pmap(w,q);
             else
