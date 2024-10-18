@@ -2226,11 +2226,12 @@ if ~isequal(file,0)
         sensel_area = 1;
         sUnit = '[MPa]';
     end
-    
-    map_stats(1,:) = {'Time [s]' ['Mean ' sUnit] ['Max ' sUnit] 'Loc X Max Force [mm]' 'Loc Y Max Force [mm]' ['Min ' sUnit] 'Loc X Min Stress [mm]' 'Loc Y Min Stress [mm]' ['Sum ' sUnit]};
+    map_stats = cell(1,9);
+    map_stats(1,1:2) = {'Threshold Pressure (MPa)' handles.tekvar{selected_condition}.header.scale_factor*handles.tekvar{selected_condition}.header.noise_threshold^handles.tekvar{selected_condition}.header.exponent};
+    map_stats(2,:) = {'Time [s]' ['Mean ' sUnit] ['Max ' sUnit] 'Loc X Max Force [mm]' 'Loc Y Max Force [mm]' ['Min ' sUnit] 'Loc X Min Stress [mm]' 'Loc Y Min Stress [mm]' ['Sum ' sUnit]};
     
     if strcmp(get(handles.pattern_register, 'Checked'), 'on')
-        map_stats(1,end+1:end+2) = {'Percent Gait' 'Flexion Angle [deg]'};
+        map_stats(2,end+1:end+2) = {'Percent Gait' 'Flexion Angle [deg]'};
     end 
     
     if strcmp(get(handles.avg_data, 'checked'), 'on')
@@ -2308,7 +2309,7 @@ if ~isequal(file,0)
                 temp_map_stats(1,end+1:end+2) = {num2str(handles.gait_time(index)/handles.Tl*100) num2str(handles.flexion_rep(index))};
             end
             
-            map_stats(index+1, :) = temp_map_stats;
+            map_stats(index+2, :) = temp_map_stats;
         else
             [max_loc_y, max_loc_x] = find(mag_roi == max(max(mag_roi)), 1);
             if ~isempty(mag_roi(~isnan(mag_roi) & mag_roi ~= 0))
@@ -2321,7 +2322,7 @@ if ~isequal(file,0)
                 temp_map_stats(1,end+1:end+2) = {num2str(handles.gait_time(index)/handles.Tl*100) num2str(handles.flexion_rep(index))};
             end
             
-            map_stats(index+1, :) = temp_map_stats;
+            map_stats(index+2, :) = temp_map_stats;
         end
                
         if flag == 1
@@ -2553,10 +2554,11 @@ if ~isequal(file,0) %if the file is open
         time = handles.tekvar{selected_condition}.data_a.time;
     end
     
-    contact_area(1,:) = {'Time [s]' 'Contact Area [mm^2]'}; %initialize column headers
+    contact_area(1,:) = {'Threshold Pressure (MPa)' handles.tekvar{selected_condition}.header.scale_factor*handles.tekvar{selected_condition}.header.noise_threshold^handles.tekvar{selected_condition}.header.exponent};
+    contact_area(2,:) = {'Time [s]' 'Contact Area [mm^2]'}; %initialize column headers
     
     if strcmp(get(handles.pattern_register, 'Checked'), 'on')
-       contact_area(1,end+1:end+2) = {'Percent Gait' 'Flexion Angle [deg]'}; %adds extra column headers 
+       contact_area(2,end+1:end+2) = {'Percent Gait' 'Flexion Angle [deg]'}; %adds extra column headers 
     end
     
     for index = 1:length(time) %cycles through all times
@@ -2574,7 +2576,7 @@ if ~isequal(file,0) %if the file is open
             if strcmp(get(handles.pattern_register, 'Checked'), 'on')
                 temp_contact_area(1,end+1:end+2) = {num2str(handles.gait_time(index)/handles.Tl*100) num2str(handles.flexion_rep(index))}; %gets additional data if indicated
             end           
-            contact_area(index+1,:) = temp_contact_area;
+            contact_area(index+2,:) = temp_contact_area;
     end
     
     csvwrite([pathfile file], contact_area, 2) %write data to csv file
