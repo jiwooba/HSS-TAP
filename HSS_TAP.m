@@ -3847,7 +3847,7 @@ if ~isequal(file,0)
     
     loc = save_center_contact(handles);
     
-    csvwrite([pathfile file], loc)
+    csvwrite([pathfile file], loc, 2);
 end
 
 function loc = save_center_contact(handles)
