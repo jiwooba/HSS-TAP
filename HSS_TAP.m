@@ -1047,7 +1047,7 @@ handles.Fs = 1/handles.T; %Sampling Frequency (Hz)
 handles.Tl = str2double(get(handles.cycle_time, 'String')); %Gait Cycle time (s)
 handles.stored_char_templates = {}; %where characteristic curves are stored
 handles.centroid_loc = []; %location of the Weighted Center of Contact Stress
-handles.time_reg_auto = true; %true/false on whether or not to align the total force plots for all open tekscan files
+handles.time_reg_auto = false; %true/false on whether or not to align the total force plots for all open tekscan files
 handles.time_shift_by{1} = 0; %how much to shift each total force plot by to match the first open case (or a template file)
 handles.mag_calced = 0; %flag to determine if magnitude difference calculations have been performed
 handles.load_calced = 0; %flag to determine if loading pattern difference calculations have been performed
@@ -1069,8 +1069,14 @@ if handles.comparison > 1
         [handles.time_order, handles.time_shift_by] = time_registration(hObject, handles, false);
         handles.time_reg_auto = true;
         guidata(hObject, handles);
+    else
+        for var_count = 1:handles.comparison
+            % set up variables
+            handles.time_order{var_count} = 1:handles.length_time;
+            handles.time_shift_by{var_count} = 0;
+        end
     end
-    
+
     %initialize the following GUI elements
     set(handles.condition_selector, 'String', {}); %Tekscan File Dropdown Menu
     set(handles.comparison_selector, 'String', {}); %Tekscan comparison file Dropdown box
@@ -2479,7 +2485,9 @@ if ~get(handles.risk_map_checkbox, 'Value') % if getting WCoCS for stress map
         loc2(:,5) = fivepointderiv(loc2(:,4), handles.Fs); 
         loc2(:,7) = fivepointderiv(loc2(:,6), handles.Fs);
         loc2(:,9) = fivepointderiv(loc2(:,8), handles.Fs);
-        loc2(:,11) = fivepointderiv(loc2(:,10), handles.Fs);
+        % if strcmp('off',get(handles.pattern_register,'Checked'))
+        %     loc2(:,11) = fivepointderiv(loc2(:,10), handles.Fs);
+        % end
     else
         %---------Five point stencil by Hongsheng-----------
         loc2(:,5) = fivepointderiv(loc2(:,4), handles.Fs); 
