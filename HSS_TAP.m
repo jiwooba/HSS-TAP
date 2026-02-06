@@ -5665,10 +5665,23 @@ if handles.curr_select_flag == 1
         'Yes', 'No', 'No');
     
     if strcmpi(choice, 'yes')
-        for leng = 1:length(handles.roibnd)
-            new_roi = [0, 0; 0, handles.tekvar{1}.header.rows; handles.tekvar{1}.header.cols, handles.tekvar{1}.header.rows; handles.tekvar{1}.header.cols, 0; 0, 0; NaN, NaN; handles.roibnd{leng}];
-            handles.roibnd{leng} = new_roi;
-        end
+         choice = questdlg('Expand By Scale Factor?', ...
+        'Expand', ...
+        'Yes', 'No', 'No');
+         if strcmpi(choice, 'no')
+            for leng = 1:length(handles.roibnd)
+                new_roi = [0, 0; 0, handles.tekvar{1}.header.rows; handles.tekvar{1}.header.cols, handles.tekvar{1}.header.rows; handles.tekvar{1}.header.cols, 0; 0, 0; NaN, NaN; handles.roibnd{leng}];
+                handles.roibnd{leng} = new_roi;
+            end
+         else
+             S = inputdlg('Enter Scale Factor:', 'Scale', [1 10]);
+             S = str2num(S{1});
+             for leng = 1:length(handles.roibnd)
+                 [~, xc, yc] = circfit(handles.roibnd{leng}(:,1),handles.roibnd{leng}(:,2));
+                 new_roi = [xc+S*(handles.roibnd{leng}(:,1)-xc), yc+S*(handles.roibnd{leng}(:,2)-yc); NaN, NaN; handles.roibnd{leng}];
+                 handles.roibnd{leng} = new_roi;
+             end
+         end
     else
         choice = questdlg('Close ROI on:', ...
             'Invert ROI', ...
