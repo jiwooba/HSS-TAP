@@ -23,7 +23,7 @@ function varargout = HSS_TAP(varargin)
 
 % Edit the above text to modify the response to help HSS_TAP
 
-% Last Modified by GUIDE v2.5 17-Oct-2024 15:32:19
+% Last Modified by GUIDE v2.5 09-Feb-2026 10:07:39
 
 %March 2011 created by Tony Chen
 
@@ -1475,8 +1475,10 @@ function save_img_Callback(hObject, eventdata, handles)
 % hObject    handle to save_img (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-[file, pathfile]=uiputfile(...
-    {'*.tiff','Tiff File(*.tiff)';...
+[file, pathfile, indx]=uiputfile(...
+    {'*.tif','Tiff File(*.tif)';...
+    '*.jpg', 'JPG File(*.jpg)';...
+    '*.png', 'PNG File(*.png)'; ...
     '*.*',  'All Files(*.*)'}, ...
     'Save Current Pressure Map', handles.path);
 
@@ -1690,8 +1692,16 @@ if ~isequal(file,0)
     end
 
     set(figure1, 'Position', [0 0 scalefactor*550 scalefactor*440], 'PaperPositionMode', 'auto');
-
-    print(figure1, '-dtiff', [pathfile file], '-r400')
+    switch indx
+        case 1
+            print(figure1, '-dtiff', [pathfile file], '-r400')
+        case 2
+            print(figure1, '-djpeg', [pathfile file], '-r400')
+        case 3
+            print(figure1, '-dpng', [pathfile file], '-r400')
+        otherwise
+            print(figure1, '-dtiff', [pathfile file], '-r400')
+    end
 
     close(figure1)
 end
@@ -6349,3 +6359,86 @@ else
 end
 
 refresh_fig(hObject, handles);
+
+
+% --------------------------------------------------------------------
+function open_project_Callback(hObject, eventdata, handles)
+% hObject    handle to open_project (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Set variables
+handles.curr_select_flag = 0; % clears all set regions of interest
+handles.highlight = 0.65; % sets ROI highlight color
+handles.h_transp = 0.5; % sets ROI highlight opacity
+handles.avg_flag = 0; % sets flag for whether average data will be calculated
+
+% Opens Gui to select a Tekscan movie file
+[file, path]=uigetfile(...
+    {'*.asf; *.csv; *.mat', 'Tekscan files';...
+    '*.*',  'All Files'}, ...
+    'Pick a Tekscan output file');
+
+% Code to open and parse selected Tekscan file
+if ~isequal(file,0) %checks that cancel isn't pressed
+    handles.path = path;
+    guidata(hObject, handles);
+
+    load([path file]);
+    handles.comparison = comparison;
+    handles.tekvar = tekvar;
+    handles.senselvar = senselvar;
+    handles.tekvar_name = tekvar_name;
+    handles.force = force;
+    handles.scale_factor = scale_factor;
+    handles.sensels = sensels;
+    handles.kinematics = kinematics;
+    handles.simulator = simulator;
+    handles.time_order = time_order;
+    set(handles.cycle_time,"String",cycle_time);
+    if strcmpi(pattern_reg,"On")
+        set(handles.pattern_register,'Checked',pattern_reg);
+        handles.gait_time = gait_time;
+        handles.gait_rep = gait_rep;
+        handles.flexion_rep = flexion_rep;
+        handles.AP_rep = AP_rep;
+    end
+    clear tekvar senselvar force scale_factor cycle_time tekvar_name comparison sensels kinematics simulator pattern_reg...
+        gait_time gait_rep flexion_rep AP_rep time_order
+    guidata(hObject, handles);
+    initialize(hObject, handles) % Setup handles with all required parameters and setup GUI
+end
+
+
+% --------------------------------------------------------------------
+function save_project_Callback(hObject, eventdata, handles)
+% hObject    handle to save_project (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+[file, pathfile]=uiputfile(...
+    {'*.mat',  'MAT files(*.mat)'}, ...
+    'Base Filename', handles.path);
+
+if ~isequal(file,0)
+    comparison = handles.comparison;
+    tekvar = handles.tekvar;
+    tekvar_name = handles.tekvar_name;
+    senselvar = handles.senselvar;
+    force = handles.force;
+    scale_factor = handles.scale_factor;
+    sensels = handles.sensels;
+    kinematics = handles.kinematics;
+    simulator = handles.simulator;
+    pattern_reg = get(handles.pattern_register,'Checked');
+    gait_time = handles.gait_time;
+    gait_rep = handles.gait_rep;
+    flexion_rep = handles.flexion_rep;
+    AP_rep = handles.AP_rep;
+    mag_calced = handles.mag_calced;
+    cycle_time = get(handles.cycle_time,"String");
+    time_order = handles.time_order;
+    save([pathfile file],"tekvar","senselvar","force","scale_factor","cycle_time", "tekvar_name", "comparison", "sensels", "kinematics", "simulator", "pattern_reg",...
+        "gait_time", "gait_rep", "flexion_rep", "AP_rep", "time_order", "mag_calced");
+    clear tekvar senselvar force scale_factor cycle_time tekvar_name comparison sensels kinematics simulator pattern_reg...
+        gait_time gait_rep flexion_rep AP_rep time_order mag_calced
+end
